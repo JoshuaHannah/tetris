@@ -46,7 +46,5 @@ defmodule Tetris.Pieces do
        |> HashDict.put(22, [5])
        |> HashDict.put(21, [4,5,6])
     end
-
-    def createDict
   end
 end
