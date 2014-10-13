@@ -12,12 +12,12 @@ defmodule Tetris.Game do
     {:ok, state, 1}
   end
 
-  def move(direction) do
-    GenServer.cast(:game, {:move, direction})
+  def move(key) do
+    GenServer.cast(:game, {:keystroke, key})
   end
 
-  def handle_cast({:move, direction}, %__MODULE__{} = state) do
-    {:noreply, move(state, direction), 0}
+  def handle_cast({:keystroke, key}, %__MODULE__{} = state) do
+    {:noreply, Grid.keystroke(state, key), 0}
   end
 
   def handle_info(:timeout, %__MODULE__{} = state) do
