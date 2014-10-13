@@ -1,0 +1,31 @@
+defmodule Tetris.Driver do
+  use GenServer
+
+  def start_link do
+    GenServer.start_link(__MODULE__, nil)
+  end
+
+  def init(nil) do
+    {:ok, Port.open({:spawn, 'tetris'}, [:eof])}
+  end
+
+  def handle_info({pid, {:data, data}}, pid) do
+    if direction = translate(data) do
+      Tetris.Game.move(direction)
+    end
+
+    {:noreply, pid}
+  end
+
+  defp translate(' '), do: :rotate
+
+  defp translate('\e[A'), do: :up
+
+  defp translate('\e[B'), do: :down
+
+  defp translate('\e[C'), do: :right
+
+  defp translate('\e[D'), do: :left
+
+  defp translate(_data),  do: nil
+end
