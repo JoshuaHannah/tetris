@@ -14,7 +14,7 @@ defmodule Tetris.Grid do
       :space ->
          drop(state)
       :up ->
-        rotate(state)
+         rotate(state)
       _ ->
         move(state, key)
     end
@@ -33,7 +33,7 @@ defmodule Tetris.Grid do
       :down ->
         downPiece = newPiece |> Enum.map(fn{h, b} -> {h-1, b} end)
         cond do
-          collides?(grid, downPiece) ->
+          invalidposition?(grid, downPiece) ->
             {newGrid, newPoints} = onCollision(grid, fpiece)
             {newGrid, Pieces.update(rpieces), points + newPoints}
 
@@ -43,7 +43,7 @@ defmodule Tetris.Grid do
       :right ->
         rightPiece = Enum.map(newPiece, fn {h, b} -> {h, Enum.map(b, fn x -> x + 1 end)} end)
         cond do
-          badmove?(:right, rightPiece) or collides?(grid, rightPiece) ->
+          invalidposition?(grid, rightPiece) ->
             {grid, pieces, points}
 
           true ->
@@ -56,7 +56,7 @@ defmodule Tetris.Grid do
         :left ->
           leftPiece = Enum.map(newPiece, fn {h, b} -> {h, Enum.map(b, fn x -> x - 1 end)} end)
           cond do
-            badmove?(:left, leftPiece) or collides?(grid, leftPiece) ->
+            invalidposition?(grid, leftPiece) ->
               {grid, pieces, points}
 
             true ->
@@ -68,18 +68,13 @@ defmodule Tetris.Grid do
     end
   end
 
-  def collides?(grid, piece) do
-    piece |> Enum.any?(fn x -> Enum.member?(grid, x) end)
-  end
-
-  def badmove?(move, piece) do
+  def invalidposition?(grid, piece) do
     flatPiece = piece |> Enum.map(fn {_h, b} -> b end) |> Enum.flatten
-    case move do
-      :right ->
-        flatPiece |> Enum.member?(11)
-      :left ->
-        flatPiece |> Enum.member?(-1)
-    end
+
+    piece |> Enum.any?(fn x -> Enum.member?(grid, x) end) ||
+    flatPiece |> Enum.member?(11) ||
+    flatPiece |> Enum.member?(-1)
+
   end
 
   def pieceCons(piece, grid) do
