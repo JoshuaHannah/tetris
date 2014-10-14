@@ -35,35 +35,37 @@ defmodule Tetris.Grid do
         cond do
           invalidposition?(grid, downPiece) ->
             {newGrid, newPoints} = onCollision(grid, fpiece)
-            {newGrid, Pieces.update(rpieces), points + newPoints}
+            cond do
+              true ->
+                %Tetris.Game{newGrid, Pieces.update(rpieces), points + newPoints}
 
-          true -> {pieceCons(fpiece, grid), Pieces.update(rpieces), points}
+          true -> %Tetris.Game{grid, [Enum.into(downPiece, new) | rpieces], points}
         end
 
       :right ->
         rightPiece = Enum.map(newPiece, fn {h, b} -> {h, Enum.map(b, fn x -> x + 1 end)} end)
         cond do
           invalidposition?(grid, rightPiece) ->
-            {grid, pieces, points}
+            %Tetris.Game{grid, pieces, points}
 
           true ->
             newfpiece =
             rightPiece ++ :lists.last(Enum.to_list(fpiece))
             |> Enum.into(new)
-            {grid, [newfpiece | rpieces], points}
+            %Tetris.Game{grid, [newfpiece | rpieces], points}
         end
 
         :left ->
           leftPiece = Enum.map(newPiece, fn {h, b} -> {h, Enum.map(b, fn x -> x - 1 end)} end)
           cond do
             invalidposition?(grid, leftPiece) ->
-              {grid, pieces, points}
+              %Tetris.Game{grid, pieces, points}
 
             true ->
               newfpiece =
               leftPiece ++ :lists.last(Enum.to_list(fpiece))
               |> Enum.into(new)
-              {grid, [newfpiece | rpieces], points}
+              %Tetris.Game{grid, [newfpiece | rpieces], points}
           end
     end
   end
@@ -85,7 +87,7 @@ defmodule Tetris.Grid do
     newGrid = pieceCons(fpiece, grid)
     deletedRows = newGrid |> Enum.to_list |> Enum.filter(fn {_k,v} -> length(v) == 10 end) |> Enum.map(fn {k,_v} -> k end)
     newGrid = newGrid |> Enum.to_list |> Enum.filter(fn {_k,v} -> length(v) != 10 end)
-    newGrid = newGrid |> Enum.map(fn {k,_v} -> {k - length(Enum.filter(deletedRows, fn x -> x < k end))} end)
+    newGrid = newGrid |> Enum.map(fn {k,_v} -> {k - length(Enum.filter(deletedRows, fn x -> x < k end))} end) |> Enum.into(new)
     case length(deletedRows) do
       0 -> {newGrid, 0}
       1 -> {newGrid, 100}
@@ -102,7 +104,7 @@ defmodule Tetris.Grid do
   def rotate(%Tetris.Game{grid: grid, pieces: pieces, points: points} do
     [fpiece | rpieces] = pieces
     {_, {_, pieceid}} = fpiece |> Enum.to_list |> :lists.last
-    {grid, [rotate(fpiece, pieceid) | rpieces], points}
+    %Tetris.Game{grid, [rotate(fpiece, pieceid) | rpieces], points}
   end
 
   def rotate(piece, pieceid) do
@@ -220,12 +222,20 @@ defmodule Tetris.Grid do
 
               _ ->
                 [e,f,g] = b
-                [{a+1, [f]},{a, [e,f]},{c, [f]}] ++ colour |> Enum.into(new)                
+                [{a+1, [f]},{a, [e,f]},{c, [f]}] ++ colour |> Enum.into(new)
             end
         end
-
-
-
     end
+  end
+
+  def drop(%Tetris.Game{grid: grid, pieces: pieces, points: points}) do
+    [fpiece | rpieces] = pieces
+    downPiece = newPiece |> Enum.map(fn{h, b} -> {h-1, b} end)
+    cond do
+      invalidposition?(grid, downpiece) ->
+        {newGrid, newPoints} = onCollision(grid, fpiece)
+        %Tetris.Game{newGrid, Pieces.update(rpieces), points + newPoints}
+      true ->
+        drop(%Tetris.Game{grid: grid, pieces: [downPiece | rpieces], points})
   end
 end
