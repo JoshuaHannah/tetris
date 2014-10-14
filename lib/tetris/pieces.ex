@@ -1,18 +1,18 @@
 defmodule Tetris.Pieces do
 
+  @doc ~S"""
+  Generates a new list of five pieces.
+  """
   def new() do
-    @doc ~S"""
-    Generates a new list of five pieces.
-    """
     Enum.to_list(1..5)
-    |> Enum.into([], fn x -> new_piece() end)
+    |> Enum.into([], fn _x -> new_piece() end)
   end
 
+  @doc ~S"""
+  Uses Erlang's random module to generate a number between 1 and 7, which corresponds to a piece.
+  Exploit the unused position 0 to correspond to the colour of the piece.
+  """
   def new_piece() do
-    @doc ~S"""
-    Uses Erlang's random module to generate a number between 1 and 7, which corresponds to a piece.
-    Exploit the unused position 0 to correspond to the colour of the piece.
-    """
     num = :random.uniform(7)
     case num do
       1 -> #line

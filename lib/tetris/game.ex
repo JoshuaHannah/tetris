@@ -1,6 +1,6 @@
 defmodule Tetris.Game do
 
-  defstruct %{:grid, :pieces, points: 0}
+  defstruct [:grid, :pieces, points: 0]
 
   use GenServer
 
