@@ -18,41 +18,41 @@ defmodule Tetris.Pieces do
       1 -> #line
         HashDict.new
         |> HashDict.put(21, [4,5,6,7])
-        |> HashDict.put(0, :green)
+        |> HashDict.put(0, {:green, :line})
       2 -> #square
         HashDict.new
         |> HashDict.put(22, [5,6])
         |> HashDict.put(21, [5,6])
-        |> HashDict.put(0, :blue)
+        |> HashDict.put(0, {:blue, :square})
       3 -> #rL
         HashDict.new
         |> HashDict.put(23, [5])
         |> HashDict.put(22, [5])
         |> HashDict.put(21, [5,6])
-        |> HashDict.put(0, :yellow)
+        |> HashDict.put(0, {:yellow, :rL})
       4 -> #lL
         HashDict.new
         |> HashDict.put(23, [6])
         |> HashDict.put(22, [6])
         |> HashDict.put(21, [5,6])
-        |> HashDict.put(0, :cyan)
+        |> HashDict.put(0, {:cyan, :lL})
       5 -> #rF
        HashDict.new
        |> HashDict.put(23, [5])
        |> HashDict.put(22, [5,6])
        |> HashDict.put(21, [6])
-       |> HashDict.put(0, :red)
+       |> HashDict.put(0, {:red, :rF})
       6 -> #lF
         HashDict.new
         |> HashDict.put(23, [6])
         |> HashDict.put(22, [5,6])
         |> HashDict.put(21, [5])
-        |> HashDict.put(0, :white)
+        |> HashDict.put(0, {:white, :lF})
       7 -> #middle
        HashDict.new
        |> HashDict.put(22, [5])
        |> HashDict.put(21, [4,5,6])
-       |> HashDict.put(0, :magenta)
+       |> HashDict.put(0, {:magenta, :lF})
     end
   end
 
