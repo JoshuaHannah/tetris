@@ -8,7 +8,7 @@ defmodule Tetris.Pieces do
     |> Enum.into([], fn x -> new_piece() end)
   end
 
-  def new_piece(num) do
+  def new_piece() do
     @doc ~S"""
     Uses Erlang's random module to generate a number between 1 and 7, which corresponds to a piece.
     Exploit the unused position 0 to correspond to the colour of the piece.
@@ -54,5 +54,9 @@ defmodule Tetris.Pieces do
        |> HashDict.put(21, [4,5,6])
        |> HashDict.put(0, :magenta)
     end
+  end
+
+  def update(pieces) do
+    :lists.reverse([new_piece | :lists.reverse(pieces)])
   end
 end
