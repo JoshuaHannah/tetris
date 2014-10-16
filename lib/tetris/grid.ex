@@ -1,22 +1,23 @@
 defmodule Tetris.Grid do
 
-  def new() do
-    new
-  end
+  defdelegate format(grid), to: __MODULE__.Formatter
 
   @doc ~S"""
   Pattern matches the keystroke to identify what action should be taken
   on the active piece.
   """
 
-  def keystroke(state, key) do
+  def keystroke(%Tetris.Game{grid: grid, pieces: pieces, points: points} = state, key) do
     case key do
       :space ->
-         drop(state)
+         {new_grid, new_pieces, new_points} = drop(grid, pieces)
+         %Tetris.Game{grid: new_grid, pieces: new_pieces, point: points + new_points}
       :up ->
-         rotate(state)
+         {new_pieces} = rotate(piece, key)
+         %Tetris.Game{grid: grid, pieces: new_pieces, point: points}
       _ ->
-        move(state, key)
+         {new_grid, new_pieces, new_points} = move(piece, grid, key)
+         %Tetris.Game{grid: new_grid, pieces: new_pieces, point: points + new_points}
     end
   end
 
@@ -25,217 +26,104 @@ defmodule Tetris.Grid do
   Returns {grid, pieces, points}.
   """
 
-  def move(%Tetris.Game{grid: grid, pieces: pieces, points: points}, direction) do
-    [fpiece | rpieces] = pieces
-    newPiece = fpiece |> Enum.to_list |> :lists.droplast
-
+  def move([piece | rpiece] = pieces, grid, direction) do
     case direction do
       :down ->
-        downPiece = newPiece |> Enum.map(fn{h, b} -> {h-1, b} end)
-        cond do
-          invalidposition?(grid, downPiece) ->
-            {newGrid, newPoints} = onCollision(grid, fpiece)
-            cond do
-              true ->
-                %Tetris.Game{newGrid, Pieces.update(rpieces), points + newPoints}
-
-          true -> %Tetris.Game{grid, [Enum.into(downPiece, new) | rpieces], points}
+        if invalid_position?(grid, down_piece(piece)) do
+          add_piece(pieces, grid)
+        else
+          {grid, [down_piece(piece) | rpiece], 0}
         end
 
       :right ->
-        rightPiece = Enum.map(newPiece, fn {h, b} -> {h, Enum.map(b, fn x -> x + 1 end)} end)
-        cond do
-          invalidposition?(grid, rightPiece) ->
-            %Tetris.Game{grid, pieces, points}
-
-          true ->
-            newfpiece =
-            rightPiece ++ :lists.last(Enum.to_list(fpiece))
-            |> Enum.into(new)
-            %Tetris.Game{grid, [newfpiece | rpieces], points}
+        if invalid_position?(grid, right_piece(piece)) do
+          {grid, pieces, 0}
+        else
+          {grid, [right_piece(piece) | rpieces], 0}
         end
 
-        :left ->
-          leftPiece = Enum.map(newPiece, fn {h, b} -> {h, Enum.map(b, fn x -> x - 1 end)} end)
-          cond do
-            invalidposition?(grid, leftPiece) ->
-              %Tetris.Game{grid, pieces, points}
-
-            true ->
-              newfpiece =
-              leftPiece ++ :lists.last(Enum.to_list(fpiece))
-              |> Enum.into(new)
-              %Tetris.Game{grid, [newfpiece | rpieces], points}
-          end
-    end
-  end
-
-  def invalidposition?(grid, piece) do
-    flatPiece = piece |> Enum.map(fn {_h, b} -> b end) |> Enum.flatten
-
-    piece |> Enum.any?(fn x -> Enum.member?(grid, x) end) ||
-    flatPiece |> Enum.member?(11) ||
-    flatPiece |> Enum.member?(-1)
-
-  end
-
-  def pieceCons(piece, grid) do
-    HashDict.merge(grid, piece, fn(_k, v1, v2) -> Enum.uniq(v1 ++ v2) end)
-  end
-
-  def onCollision(grid, fpiece) do
-    newGrid = pieceCons(fpiece, grid)
-    deletedRows = newGrid |> Enum.to_list |> Enum.filter(fn {_k,v} -> length(v) == 10 end) |> Enum.map(fn {k,_v} -> k end)
-    newGrid = newGrid |> Enum.to_list |> Enum.filter(fn {_k,v} -> length(v) != 10 end)
-    newGrid = newGrid |> Enum.map(fn {k,_v} -> {k - length(Enum.filter(deletedRows, fn x -> x < k end))} end) |> Enum.into(new)
-    case length(deletedRows) do
-      0 -> {newGrid, 0}
-      1 -> {newGrid, 100}
-      2 -> {newGrid, 200}
-      3 -> {newGrid, 400}
-      4 -> {newGrid, 800}
+      :left ->
+        if invalid_position?(grid, left_piece(piece)) do
+          {grid, pieces, 0}
+        else
+          {grid, [left_piece(piece) | rpieces], 0}
     end
   end
 
   @doc ~S"""
-  I'm not proud of the following code
+  Following three functions make code cleaner.
   """
+  defp down_piece(piece) do
+    {piece_coords, piece_info} = piece |> split
 
-  def rotate(%Tetris.Game{grid: grid, pieces: pieces, points: points} do
-    [fpiece | rpieces] = pieces
-    {_, {_, pieceid}} = fpiece |> Enum.to_list |> :lists.last
-    %Tetris.Game{grid, [rotate(fpiece, pieceid) | rpieces], points}
+    piece_coords
+    |> Enum.map(fn {k,v} -> {k-1, v} end)
+    ++ piece_info
   end
 
-  def rotate(piece, pieceid) do
-    blocks = piece |> Enum.to_list |> :lists.droplast
-    colour information |> Enum.to_list |> :lists.last
-    case pieceid do
-      :line ->
-        case length(blocks) do
-          1 ->
-            [{a, [b,c,d,e]}] = blocks
-            [{a, [c]}, {a-1, [c]}, {a-2, [c]}, {a-3, [c]}] ++ colour |> Enum.into(new)
+  defp right_piece([]) do
+    {piece_coords, piece_info} = piece |> split
 
-          _ ->
-            [{a, [c]}|_] = blocks
-            [{a, [c-1, c, c+1, c+2]}]
-        end
-
-      :square ->
-        piece
-
-      :rF ->
-        case length(blocks) do
-          3 ->
-            [_, {a, [b,c]}, _] = blocks
-            [{a,[b,c]}, {a+1, [c, c+1]}] ++ colour |> Enum.into(new)
-
-          _ ->
-            [{a, [b,c]}, _] = blocks
-            [{a+1, [b]}, {a, [b,c]}, {a-1, [c]}] ++ colour |> Enum.into(new)
-        end
-
-      :lF ->
-        case length(blocks) do
-          3 ->
-            [_, {a, [b,c], _}] = blocks
-            [{a, [b,c]}, {a-1, [c, c+1]}] ++ colour |> Enum.into(new)
-
-          _ ->
-            [{a,[b,c]}, _] = blocks
-            [{a+1, [c]}, {a, [b,c]}, {a-1, [b]}] ++ colour |> Enum.into(new)
-        end
-
-      :lL ->
-        case length(blocks) do
-          3 ->
-            [{a,b}, {c,d}, {e,f}] = blocks
-            case length(b) ->
-              2 ->
-                [g,h] = b
-                [{c, [g-1, g, h]}, {e,[h]}] ++ colour |> Enum.into(new)
-
-              _ ->
-                [g,h] = f
-                [{c, [g]}, {e, [g,h,h+1]}] ++ colour |> Enum.into(new)
-            end
-
-          _ ->
-            [{a,b}, {c,d}] = blocks
-            case length(d) do
-              3 ->
-                [e,f,g] = d
-                [{a+1, [e]},{a, [e]},{c, [e,f]}] ++ colour |> Enum.into(new)
-
-              _ ->
-                [e,f,g] = b
-                [{a+1, [f]},{a, [f]},{c, [e,f]}] ++ colour |> Enum.into(new)
-            end
-        end
-
-
-      :rL ->
-        case length(blocks) do
-          3 ->
-            [{a,b}, {c,d}, {e,f}] = blocks
-            case length(b) ->
-              2 ->
-                [g,h] = b
-                [{e, [g-1]}, {c, [g-1, g, h]}] ++ colour |> Enum.into(new)
-
-              _ ->
-                [g,h] = f
-                [{c, [h]},{e, {g-1,g,h}}] ++ colour |> Enum.into(new)
-            end
-          _ ->
-            [{a,b}, {c,d}] = blocks
-            case length(d) do
-              3 ->
-                [e,f,g] = d
-                [{a+1, [e]}, {a, [e]}, {c, [e,f]}] ++ colour |> Enum.into(new)
-
-              _ ->
-                [e,f,g] = b
-                [{a+1, [e,f]},{a, [f]},{c, [f]}] ++ colour |> Enum.into(new)
-            end
-        end
-
-      :middle ->
-        case length(blocks) do
-          3 ->
-            [{a,[b]}, {c,[d,e]}, {f,[g]}] = blocks
-            case b < e do
-              true ->
-                [{c,[d-1, d, e]}, {f, [d]}] ++ colour |> Enum.into(new)
-
-              _ ->
-                [{c, [d]}, {f, [d-1,d,e]}] ++ colour |> Enum.into(new)
-            end
-
-          _ ->
-            [{a,b}, {c,d}] = blocks
-            case length(d) do
-              3 ->
-                [e,f,g] = d
-                [{a+1, [e]}, {a, [e,f]}, {c, [e]}] ++ colour |> Enum.into(new)
-
-              _ ->
-                [e,f,g] = b
-                [{a+1, [f]},{a, [e,f]},{c, [f]}] ++ colour |> Enum.into(new)
-            end
-        end
-    end
+    piece_coords
+    |> Enum.map(fn {k,v} -> {k, Enum.map(v, fn x -> x + 1 end)} end)
+    ++ piece_info
   end
 
-  def drop(%Tetris.Game{grid: grid, pieces: pieces, points: points}) do
-    [fpiece | rpieces] = pieces
-    downPiece = newPiece |> Enum.map(fn{h, b} -> {h-1, b} end)
-    cond do
-      invalidposition?(grid, downpiece) ->
-        {newGrid, newPoints} = onCollision(grid, fpiece)
-        %Tetris.Game{newGrid, Pieces.update(rpieces), points + newPoints}
-      true ->
-        drop(%Tetris.Game{grid: grid, pieces: [downPiece | rpieces], points})
+  defp left_piece([]) do
+    {piece_coords, piece_info} = piece |> split
+
+    piece_coords
+    |> Enum.map(fn {k,v} -> {k, Enum.map(v, fn x -> x - 1 end)} end)
+    ++ piece_info
+  end
+
+  defp split(piece) do
+    piece |> Enum.split_while(fn {_k,v} -> :erlang.is_list(v) end)
+  end
+
+  def invalid_position?(grid, piece) do
+    out_of_bounds?(piece)
+    or grid_piece_overlap(grid, piece)
+    or hits_bottom(grid, piece)
+  end
+
+  def out_of_bounds?(piece) do
+    {grid_coords, _} = piece |> split
+
+    grid_coords |> Enum.map(fn {k,v} -> Enum.member(v, 0) or Enum.member(v, 11) end) |> Enum.any?
+  end
+
+  def grid_piece_overlap?(grid, piece) do
+
+  end
+
+  def hits_bottom(grid, piece) do
+
+  end
+
+  def add_piece([piece|rpieces], grid) do
+
+  end
+
+  def placement?(grid, piece) do
+
+  end
+
+  def reduce_grid(grid) do
+
+  end
+
+
+  def rotate(piece, key) do
+
+  end
+
+  @doc ~S"""
+    Arguments: Grid :: [{k,v}], Pieces :: HashDict({k,v})
+
+    Returns: {Grid, Pieces, newPoints :: Int}
+  """
+  def drop(grid, pieces) do
+
   end
 end

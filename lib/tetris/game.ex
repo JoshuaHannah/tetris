@@ -2,7 +2,13 @@ defmodule Tetris.Game do
 
   defstruct [:grid, :pieces, points: 0]
 
+  alias Tetris.Grid
+
   use GenServer
+
+  def new() do
+    %__MODULE__{grid: [], pieces: Tetris.Pieces.new}
+  end
 
   def start_link(state) do
     GenServer.start_link(__MODULE__, state, [name: :game])
@@ -20,17 +26,11 @@ defmodule Tetris.Game do
     {:noreply, Grid.keystroke(state, key), 0}
   end
 
-  def handle_info(:timeout, %__MODULE__{} = state) do
+  def handle_info(:timeout, state) do
     __MODULE__.Formatter.format(state)
     |> IO.write
+
+  {:noreply, state}
   end
-
-  defp move(%__MODULE__{grid: state, points: points}, direction) do
-    {grid, pieces, points} = Grid.move({grid, pieces, direction})
-
-    %__MODULE__{grid: grid, pieces: pieces, points: points}
-  end
-
-
 
 end

@@ -6,7 +6,7 @@ defmodule Tetris.Driver do
   end
 
   def init(nil) do
-    {:ok, Port.open({:spawn, 'tetris'}, [:eof])}
+    {:ok, Port.open({:spawn, 'tty_sl -c -e'}, [:eof])}
   end
 
   def handle_info({pid, {:data, data}}, pid) do

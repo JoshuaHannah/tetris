@@ -7,7 +7,8 @@ defmodule Tetris.Supervisor do
 
   def init(nil) do
     children = [
-
+      worker(Tetris.Driver, []),
+      worker(Tetris.Game, [Tetris.Game.new])
     ]
     supervise(children, strategy: :one_for_one)
   end

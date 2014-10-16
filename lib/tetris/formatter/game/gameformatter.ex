@@ -1,5 +1,6 @@
 defmodule Tetris.Game.Formatter do
-  def format(%Tetris.Game{} = game) do
+
+  def format(%{points: points, grid: grid, pieces: pieces} =game) do
     [IO.ANSI.home,
     IO.ANSI.clear,
     format_score(game),
@@ -7,11 +8,11 @@ defmodule Tetris.Game.Formatter do
     IO.ANSI.reset]
   end
 
-  defp format_score(%{points: points}) do
-    ["  points: ", Integer.to_string(points), "\r\n\r\n"]
+  def format_score(%{points: points, grid: grid, pieces: pieces}) do
+
   end
 
-  defp format_grid(%{grid: grid}) do
-    Tetris.Grid.Formatter.format(grid)
+  def format_grid(%{points: points,grid: grid, pieces: pieces}) do
+    
   end
 end
