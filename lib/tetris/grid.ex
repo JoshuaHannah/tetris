@@ -354,7 +354,7 @@ defmodule Tetris.Grid do
     if invalid_position(grid, new_piece) do
       add_piece(pieces, grid)
     else
-      drop(grid, {[new_piece | rpieces]})
+      drop(grid, [new_piece | rpieces])
     end
   end
 

@@ -17,7 +17,7 @@ defmodule Tetris.Driver do
     {:noreply, pid}
   end
 
-  defp translate(' '), do: :rotate
+  defp translate(' '), do: :space
 
   defp translate('\e[A'), do: :up
 
