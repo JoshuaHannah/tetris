@@ -1,59 +1,31 @@
 defmodule Tetris.Grid.Formatter do
 
-  def format(grid, [piece | _rpieces]) do
+  def format(grid, piece) do
+    [{_, colour}] = piece |> Enum.filter(fn {k,v} -> k == 0 end)
+    {piece_coords, _} = piece |> Tetris.Grid.split
+
+    piece_coords_formattable = piece_coords
+                               |> Enum.map(fn {k,v} -> Enum.map(v, fn x -> {k,x, colour} end) end)
+                               |> :lists.flatten
+
+    all_blocks = grid ++ piece_coords_formattable
+
     20..1
     |> Enum.to_list
-    |> Enum.map(fn x -> {HashDict.get(grid, x), HashDict.get(piece, x), HashDict.get(piece, 0)} end)
-    |> Enum.map(&to_rows(&1))
-    |> :lists.flatten
+    |> Enum.map(fn x -> Enum.filter(all_blocks, fn {k,v,c} -> k == x end) end)
+    |> Enum.map(&format_row(&1))
     |> IO.ANSI.format_fragment
   end
 
-  def to_rows({nil,nil,_}) do
-    "\r\n"
+  def format_row([]) do
+    ["          \r\n"]
   end
 
-  def to_rows({a, nil, _}) do
+  def format_row(row) do
     1..10
     |> Enum.to_list
-    |> Enum.map(fn x ->
-       if Enum.member?(a,x) do
-          [:white, "#"]
-       else
-         ""
-      end
-    end)
-  end
-
-  def to_rows({nil, a, nil}) do
-    to_rows({nil, a, {:blue, :hello}})
-  end
-
-  def to_rows({nil, b, {c,_}}) do
-    1..10
-    |> Enum.to_list
-    |> Enum.map(fn x ->
-      if Enum.member?(b,x) do
-        [c, "#"]
-      else
-        " "
-      end
-    end)
-  end
-
-  def to_rows({a,b,{c,_}}) do
-    1..10
-    |> Enum.to_list
-    |> Enum.map(fn x ->
-       if Enum.member?(a,x) do
-          [:white, "#"]
-       else
-         if Enum.member?(b,x) do
-           [c, "#"]
-         else
-           " "
-         end
-       end
-     end)
+    |> Enum.map(fn x -> Enum.filter(row, fn {_k,v,_c} -> v == x end) end)
+    |> Enum.map(fn x -> if x == [], do: " ", else: Enum.map(x, fn {_k,_v,c} -> [c, "#"] end) end)
+    |> :lists.append("\r\n")
   end
 end

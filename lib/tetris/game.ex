@@ -29,7 +29,7 @@ defmodule Tetris.Game do
   def handle_info(:timeout, state) do
     __MODULE__.Formatter.format(state)
     |> IO.write
-
+    
   {:noreply, state}
   end
 
