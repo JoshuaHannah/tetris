@@ -15,7 +15,26 @@ defmodule Tetris.Game do
   end
 
   def init(%__MODULE__{} = state) do
+    spawn(fn ->
+      receive do
+      after
+        500 ->
+          move(:down)
+          loop()
+        end
+      end)
     {:ok, state, 1}
+  end
+
+  def loop() do
+    spawn(fn ->
+      receive do
+      after
+        500 ->
+          move(:down)
+          loop()
+        end
+      end)
   end
 
   def move(key) do
@@ -29,7 +48,7 @@ defmodule Tetris.Game do
   def handle_info(:timeout, state) do
     __MODULE__.Formatter.format(state)
     |> IO.write
-    
+
   {:noreply, state}
   end
 

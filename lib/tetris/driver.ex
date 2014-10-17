@@ -10,22 +10,22 @@ defmodule Tetris.Driver do
   end
 
   def handle_info({pid, {:data, data}}, pid) do
-    if direction = translate(data) do
+    if direction = keystroke(data) do
       Tetris.Game.move(direction)
     end
-
+    
     {:noreply, pid}
   end
 
-  defp translate(' '), do: :space
+  defp keystroke(' '), do: :space
 
-  defp translate('\e[A'), do: :up
+  defp keystroke('\e[A'), do: :up
 
-  defp translate('\e[B'), do: :down
+  defp keystroke('\e[B'), do: :down
 
-  defp translate('\e[C'), do: :right
+  defp keystroke('\e[C'), do: :right
 
-  defp translate('\e[D'), do: :left
+  defp keystroke('\e[D'), do: :left
 
-  defp translate(_data),  do: nil
+  defp keystroke(_),  do: nil
 end
