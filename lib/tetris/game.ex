@@ -15,18 +15,11 @@ defmodule Tetris.Game do
   end
 
   def init(%__MODULE__{} = state) do
-    spawn(fn ->
-      receive do
-      after
-        500 ->
-          move(:down)
-          loop()
-        end
-      end)
+    loop()
     {:ok, state, 1}
   end
 
-  def loop() do
+  defp loop() do
     spawn(fn ->
       receive do
       after

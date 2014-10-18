@@ -24,7 +24,7 @@ defmodule Tetris.Grid do
   Returns {grid, pieces, points}.
   """
 
-  def move([piece | rpieces] = pieces, grid, direction) do
+  defp move([piece | rpieces] = pieces, grid, direction) do
     case direction do
       :down ->
         if invalid_position(grid, down_piece(piece)) do
@@ -53,7 +53,7 @@ defmodule Tetris.Grid do
   Following three functions make code cleaner.
   """
 
-  def down_piece(piece) do
+  defp down_piece(piece) do
     {piece_coords, piece_info} = piece |> split
 
     piece_coords
@@ -61,7 +61,7 @@ defmodule Tetris.Grid do
     |> :lists.append(piece_info)
   end
 
-  def right_piece(piece) do
+  defp right_piece(piece) do
     {piece_coords, piece_info} = piece |> split
 
     piece_coords
@@ -69,7 +69,7 @@ defmodule Tetris.Grid do
     |> :lists.append(piece_info)
   end
 
-  def left_piece(piece) do
+  defp left_piece(piece) do
     {piece_coords, piece_info} = piece |> split
 
     piece_coords
@@ -81,24 +81,24 @@ defmodule Tetris.Grid do
     piece |> Enum.split_while(fn {_k,v} -> :erlang.is_list(v) end)
   end
 
-  def invalid_position(grid, piece) do
+  defp invalid_position(grid, piece) do
     out_of_bounds?(piece) or grid_piece_overlap?(grid, piece) or hits_bottom(grid, piece)
   end
 
-  def out_of_bounds?(piece) do
+  defp out_of_bounds?(piece) do
     {grid_coords, _} = piece |> split
 
     grid_coords |> Enum.map(fn {k,v} -> Enum.member?(v, 0) or Enum.member?(v, 11) end) |> Enum.any?
   end
 
-  def grid_piece_overlap?(grid, piece) do
+  defp grid_piece_overlap?(grid, piece) do
     {piece_coords, piece_info} = piece |> split
     grid_coords = grid |> Enum.map(fn {k,v,c} -> {k,v} end)
     piece_coords_list = piece_coords |> Enum.map(fn {k,v} -> Enum.map(v, fn x -> {k,x} end) end) |> :lists.flatten
     piece_coords_list |> Enum.map(fn x -> Enum.member?(grid_coords, x) end) |> Enum.any?
   end
 
-  def hits_bottom(grid, piece) do
+  defp hits_bottom(grid, piece) do
     {piece_coords, _} = piece |> split
     piece_coords |> Enum.map(fn {k,v} -> k == 0 end) |> Enum.any?
   end
@@ -107,7 +107,7 @@ defmodule Tetris.Grid do
   Takes pieces and grid.. Returns {grid, pieces, points}
   """
 
-  def add_piece([piece|rpieces], grid) do
+  defp add_piece([piece|rpieces], grid) do
     {piece_coords, piece_info} = piece |> split
     [{0, colour}] = piece_info |> Enum.filter(fn {k,v} -> k == 0 end)
 
@@ -123,7 +123,7 @@ defmodule Tetris.Grid do
     {newGrid, newPieces, points}
   end
 
-  def reduce_grid(grid, row , no) do
+  defp reduce_grid(grid, row , no) do
     is_full = (grid |> Enum.filter(fn {k,v,c} -> k == row end) |> length) == 10
 
     if is_full do
@@ -140,7 +140,7 @@ defmodule Tetris.Grid do
     end
   end
 
-  def power(m, n) do
+  defp power(m, n) do
     case n<1 do
       true ->
         m
@@ -152,8 +152,9 @@ defmodule Tetris.Grid do
   @doc ~S"""
   Takes pieces and returns new pieces, with the active piece rotated.
   """
-  def rotate([piece | rpieces] = old_pieces, grid) do
+  defp rotate([piece | rpieces] = old_pieces, grid) do
     {piece_id, rotation} = {piece |> Enum.into(%{}) |> Dict.get(-1), piece |> Enum.into(%{}) |> Dict.get(-2)}
+
     {piece_coords, piece_info} = piece |> split
 
     rotated_piece_info = piece_info |> Enum.map(fn {k,v} -> if k == -2, do: {k, rem(v+1, 4)}, else: {k,v} end)
@@ -347,7 +348,7 @@ defmodule Tetris.Grid do
     Arguments: Grid :: [{k,v}], Pieces :: HashDict({k,v})
     Returns: {Grid, Pieces, newPoints :: Int}
   """
-  def drop(grid, [piece | rpieces] = pieces) do
+  defp drop(grid, [piece | rpieces] = pieces) do
     {piece_coords, piece_info} = piece |> split
     new_piece = (piece_coords |> Enum.map(fn {k,v} -> {k-1, v} end)) ++ piece_info
 
