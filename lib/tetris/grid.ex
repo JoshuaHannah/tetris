@@ -182,7 +182,7 @@ defmodule Tetris.Grid do
         end
 
       :square ->
-        old_pieces
+        {old_pieces}
 
       :rF ->
         case rem(rotation, 2) do
