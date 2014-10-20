@@ -13,7 +13,7 @@ defmodule Tetris.Driver do
     if direction = keystroke(data) do
       Tetris.Game.move(direction)
     end
-    
+
     {:noreply, pid}
   end
 

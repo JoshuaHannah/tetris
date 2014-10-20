@@ -1,10 +1,5 @@
 defmodule Tetris.Grid do
 
-  @doc ~S"""
-  Pattern matches the keystroke to identify what action should be taken
-  on the active piece.
-  """
-
   def keystroke(%Tetris.Game{grid: grid, pieces: pieces, points: points} = state, key) do
     case key do
       :space ->
@@ -18,11 +13,6 @@ defmodule Tetris.Grid do
          %Tetris.Game{grid: new_grid, pieces: new_pieces, points: points + new_points}
     end
   end
-
-  @doc ~S"""
-  Moves the active piece the corresponding direction.
-  Returns {grid, pieces, points}.
-  """
 
   defp move([piece | rpieces] = pieces, grid, direction) do
     case direction do
@@ -344,10 +334,6 @@ defmodule Tetris.Grid do
     end
   end
 
-  @doc ~S"""
-    Arguments: Grid :: [{k,v}], Pieces :: HashDict({k,v})
-    Returns: {Grid, Pieces, newPoints :: Int}
-  """
   defp drop(grid, [piece | rpieces] = pieces) do
     {piece_coords, piece_info} = piece |> split
     new_piece = (piece_coords |> Enum.map(fn {k,v} -> {k-1, v} end)) ++ piece_info
