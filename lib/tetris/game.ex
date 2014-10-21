@@ -19,6 +19,18 @@ defmodule Tetris.Game do
     {:ok, state, 1}
   end
 
+  def handle_cast({:keystroke, key}, %__MODULE__{} = state) do
+    {:noreply, Grid.keystroke(state, key), 0}
+  end
+
+  def handle_info(:timeout, state) do
+    __MODULE__.Formatter.format(state)
+    |> IO.write
+
+  {:noreply, state}
+  end
+
+
   defp loop() do
     spawn(fn ->
       receive do
@@ -32,17 +44,6 @@ defmodule Tetris.Game do
 
   def move(key) do
     GenServer.cast(:game, {:keystroke, key})
-  end
-
-  def handle_cast({:keystroke, key}, %__MODULE__{} = state) do
-    {:noreply, Grid.keystroke(state, key), 0}
-  end
-
-  def handle_info(:timeout, state) do
-    __MODULE__.Formatter.format(state)
-    |> IO.write
-
-  {:noreply, state}
   end
 
 end

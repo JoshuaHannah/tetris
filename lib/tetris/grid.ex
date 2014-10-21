@@ -14,6 +14,10 @@ defmodule Tetris.Grid do
     end
   end
 
+  def split(piece) do
+    piece |> Enum.split_while(fn {_k,v} -> :erlang.is_list(v) end)
+  end
+
   defp move([piece | rpieces] = pieces, grid, direction) do
     case direction do
       :down ->
@@ -65,10 +69,6 @@ defmodule Tetris.Grid do
     piece_coords
     |> Enum.map(fn {k,v} -> {k, Enum.map(v, fn x -> x - 1 end)} end)
     |> :lists.append(piece_info)
-  end
-
-  def split(piece) do
-    piece |> Enum.split_while(fn {_k,v} -> :erlang.is_list(v) end)
   end
 
   defp invalid_position(grid, piece) do
@@ -344,5 +344,4 @@ defmodule Tetris.Grid do
       drop(grid, [new_piece | rpieces])
     end
   end
-
 end
